@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"time" 
-	
-	"github.com/SimonPietrucha/Docker/Anwendung"
+	"time"
+
+	"github.com/SimonPietrucha/MS2/Anwendung"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 

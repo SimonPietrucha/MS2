@@ -1,4 +1,4 @@
-module github.com/SimonPietrucha/Docker
+module github.com/SimonPietrucha/MS2
 
 go 1.20
 
