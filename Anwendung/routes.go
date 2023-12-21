@@ -15,7 +15,7 @@ func loadRoutes(userHandler *User) *chi.Mux {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	router.Route("/product", func(r chi.Router) {
+	router.Route("/user", func(r chi.Router) {
 		loadUserRoutes(r, userHandler)
 	})
 

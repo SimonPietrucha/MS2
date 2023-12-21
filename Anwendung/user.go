@@ -1,5 +1,3 @@
-// product.go
-
 package Anwendung
 
 import (

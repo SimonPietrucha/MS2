@@ -25,12 +25,12 @@ func New() (*App, error) {
 	databaseName := "MS2"
 	DB := client.Database(databaseName)
 
-	productCollection := DB.Collection("user")
+	userCollection := DB.Collection("user")
 
-	productHandler := &User{Collection: productCollection}
+	userHandler := &User{Collection: userCollection}
 
 	app := &App{
-		router: loadRoutes(productHandler),
+		router: loadRoutes(userHandler),
 		DB:     DB,
 	}
 	return app, nil
