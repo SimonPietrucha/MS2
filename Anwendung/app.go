@@ -15,7 +15,7 @@ type App struct {
 }
 
 func New() (*App, error) {
-	clientOptions := options.Client().ApplyURI("mongodb://mein-mongodb-user:27018")
+	clientOptions := options.Client().ApplyURI("mongodb://mein-mongodb-kunde:27017")
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
@@ -25,12 +25,12 @@ func New() (*App, error) {
 	databaseName := "MS2"
 	DB := client.Database(databaseName)
 
-	userCollection := DB.Collection("user")
+	kundeCollection := DB.Collection("kunde")
 
-	userHandler := &User{Collection: userCollection}
+	kundeHandler := &Kunde{Collection: kundeCollection}
 
 	app := &App{
-		router: loadRoutes(userHandler),
+		router: loadRoutes(kundeHandler),
 		DB:     DB,
 	}
 	return app, nil

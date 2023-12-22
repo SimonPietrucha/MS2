@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func loadRoutes(userHandler *User) *chi.Mux {
+func loadRoutes(kundeHandler *Kunde) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
@@ -15,17 +15,17 @@ func loadRoutes(userHandler *User) *chi.Mux {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	router.Route("/user", func(r chi.Router) {
-		loadUserRoutes(r, userHandler)
+	router.Route("/kunde", func(r chi.Router) {
+		loadKundeRoutes(r, kundeHandler)
 	})
 
 	return router
 }
 
-func loadUserRoutes(router chi.Router, userHandler *User) {
-	router.Post("/", userHandler.Create)
-	router.Get("/", userHandler.List)
-	router.Get("/{id}", userHandler.GetByID)
-	router.Put("/{id}", userHandler.UpdateByID)
-	router.Delete("/{id}", userHandler.DeleteByID)
+func loadKundeRoutes(router chi.Router, kundeHandler *Kunde) {
+	router.Post("/", kundeHandler.Create)
+	router.Get("/", kundeHandler.List)
+	router.Get("/{id}", kundeHandler.GetByID)
+	router.Put("/{id}", kundeHandler.UpdateByID)
+	router.Delete("/{id}", kundeHandler.DeleteByID)
 }

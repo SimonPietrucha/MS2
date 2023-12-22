@@ -1,12 +1,12 @@
 version: '3'
 services:
-  mein-mongodb-user:
+  mein-mongodb-kunde:
     image: mongo:latest
-    container_name: mein-docker-user
+    container_name: mein-docker-kunde
     ports:
-      - "27018:27018"
+      - "27018:27017"
     networks:
-      - meine-netzwerk-user
+      - meine-netzwerk-kunde
 
   microservice2:
     build:
@@ -15,9 +15,9 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      - mein-mongodb-user
+      - mein-mongodb-kunde
     networks:
-      - meine-netzwerk-user
+      - meine-netzwerk-kunde
 
 networks:
   meine-netzwerk-user:
