@@ -20,4 +20,4 @@ services:
       - meine-netzwerk-kunde
 
 networks:
-  meine-netzwerk-user:
+  meine-netzwerk-kunde:

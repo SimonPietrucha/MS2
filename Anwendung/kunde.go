@@ -17,8 +17,9 @@ type Kunde struct {
 
 type KundeModel struct {
 	ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Name     string             `json:"name,omitempty" bson:"name,omitempty"`
-	Quantity int                `json:"quantity,omitempty" bson:"quantity,omitempty"`
+	Vorname  string             `json:"vorname,omitempty" bson:"vorname,omitempty"`
+	Nachname string             `json:"nachname,omitempty" bson:"nachname,omitempty"`
+	Email    string             `json:"email,omitempty" bson:"email,omitempty"`
 }
 
 func (p *Kunde) Create(w http.ResponseWriter, r *http.Request) {
