@@ -3,11 +3,12 @@ module github.com/SimonPietrucha/MS2
 go 1.20
 
 require (
-	github.com/go-chi/chi/v5 v5.0.10
+	github.com/go-chi/chi/v5 v5.0.11
 	go.mongodb.org/mongo-driver v1.13.1
 )
 
 require (
+	github.com/SimonPietrucha/Docker v0.0.0-20231219175001-dca103e522e3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect

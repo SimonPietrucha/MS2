@@ -10,8 +10,9 @@ import (
 )
 
 type App struct {
-	router http.Handler
-	DB     *mongo.Database
+	router                 http.Handler
+	DB                     *mongo.Database
+	ProduktMicroserviceURL string
 }
 
 func New() (*App, error) {
@@ -21,13 +22,17 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 	fmt.Println("Connected to MongoDB")
+	produktMicroserviceURL := "http://microservice1:3000"
 
 	databaseName := "MS2"
 	DB := client.Database(databaseName)
 
 	kundeCollection := DB.Collection("kunde")
 
-	kundeHandler := &Kunde{Collection: kundeCollection}
+	kundeHandler := &Kunde{
+		Collection:             kundeCollection,
+		ProduktMicroserviceURL: produktMicroserviceURL,
+	}
 
 	app := &App{
 		router: loadRoutes(kundeHandler),

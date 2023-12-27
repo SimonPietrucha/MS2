@@ -15,6 +15,7 @@ func loadRoutes(kundeHandler *Kunde) *chi.Mux {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+
 	router.Route("/kunde", func(r chi.Router) {
 		loadKundeRoutes(r, kundeHandler)
 	})
@@ -28,4 +29,5 @@ func loadKundeRoutes(router chi.Router, kundeHandler *Kunde) {
 	router.Get("/{id}", kundeHandler.GetByID)
 	router.Put("/{id}", kundeHandler.UpdateByID)
 	router.Delete("/{id}", kundeHandler.DeleteByID)
+	router.Post("/{id}/kaufen", kundeHandler.Kaufen)
 }
