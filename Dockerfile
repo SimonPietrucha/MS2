@@ -1,21 +1,21 @@
-# Verwenden Sie das offizielle Go-Image als Basis
+# Erstellen des Image
 FROM golang:latest
 
-# Setzen Sie das Arbeitsverzeichnis innerhalb des Containers
+# Arbeitsverzeichnis im Container
 WORKDIR /app
 
-# Kopieren Sie die go.mod- und go.sum-Dateien, um die Abhängigkeiten zu installieren
+# kopieren um Abhängigkeiten zu installieren
 COPY go.mod .
 COPY go.sum .
 
-# Führen Sie 'go mod download' aus, um die Abhängigkeiten herunterzuladen
+# Abhängigkeiten herunterladen
 RUN go mod download
 
-# Kopieren Sie den restlichen Projektcode in das Arbeitsverzeichnis
+# Kopieren des restlichen Projektcodes
 COPY . .
 
-# Kompilieren Sie die Go-Anwendung
+# Kompilieren der Anwendung
 RUN go build -o main .
 
-# Setzen Sie den Befehl zum Ausführen der Anwendung
+# Ausführen der Anwendung
 CMD ["./main"]

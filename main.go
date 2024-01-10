@@ -12,7 +12,6 @@ import (
 func main() {
 	app, err := Anwendung.New()
 	if err != nil {
-		// Behandle den Fehler
 		fmt.Println("Failed to create app:", err)
 		return
 	}

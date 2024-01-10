@@ -1,6 +1,7 @@
 package Anwendung
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 )
 
 type Kunde struct {
-	Collection             *mongo.Collection // Füge die Collection hinzu
+	Collection             *mongo.Collection
 	ProduktMicroserviceURL string
 }
 
@@ -23,10 +24,13 @@ type KundeModel struct {
 	Email            string             `json:"email,omitempty" bson:"email,omitempty"`
 	GekaufteProdukte []GekauftesProdukt `json:"gekaufteProdukte,omitempty" bson:"gekaufteProdukte,omitempty"`
 }
+type ProduktMenge struct {
+	Quantity int `json:"quantity,omitempty" bson:"quantity,omitempty"`
+}
 
 type GekauftesProdukt struct {
 	ProduktID primitive.ObjectID `json:"produktID,omitempty" bson:"produktID,omitempty"`
-	Menge     int                `json:"menge,omitempty" bson:"menge,omitempty"`
+	Quantity  int                `json:"quantity,omitempty" bson:"quantity,omitempty"`
 }
 
 func (p *Kunde) Create(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +40,7 @@ func (p *Kunde) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Füge ein leeres Slice für die gekauften Produkte hinzu
+	// Platzhalter für gekaufte Produkte
 	kunde.GekaufteProdukte = []GekauftesProdukt{}
 
 	result, err := p.Collection.InsertOne(context.TODO(), kunde)
@@ -126,6 +130,7 @@ func (p *Kunde) DeleteByID(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
 func (k *Kunde) Kaufen(w http.ResponseWriter, r *http.Request) {
 	kundeID := chi.URLParam(r, "id")
 	objID, err := primitive.ObjectIDFromHex(kundeID)
@@ -135,8 +140,9 @@ func (k *Kunde) Kaufen(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var kaufanfrage struct {
-		ProduktID primitive.ObjectID `json:"produktID,omitempty" bson:"produktID,omitempty"`
-		Menge     int                `json:"menge,omitempty" bson:"menge,omitempty"`
+		ProduktID   primitive.ObjectID `json:"produktID,omitempty" bson:"produktID,omitempty"`
+		Quantity    int                `json:"quantity,omitempty" bson:"quantity,omitempty"`
+		ProduktName string             `json:"name,omitempty" bson:"name,omitempty"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&kaufanfrage); err != nil {
@@ -144,8 +150,62 @@ func (k *Kunde) Kaufen(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Rufe den Produktkauf im Produkt-Microservice auf
-	response, err := http.Post(k.ProduktMicroserviceURL+"/product/"+kaufanfrage.ProduktID.Hex()+"/aktualisiereBestand", "application/json", r.Body)
+	// Rufe die aktuelle Produktmenge ab
+	productMicroserviceURL := k.ProduktMicroserviceURL + "/product/" + kaufanfrage.ProduktID.Hex()
+	response, err := http.Get(productMicroserviceURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		http.Error(w, "Fehler beim Abrufen der Produktmenge", http.StatusInternalServerError)
+		return
+	}
+
+	var produktMenge struct {
+		Quantity int `json:"quantity,omitempty" bson:"quantity,omitempty"`
+	}
+
+	if err := json.NewDecoder(response.Body).Decode(&produktMenge); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if kaufanfrage.Quantity > produktMenge.Quantity {
+		http.Error(w, "Nicht genügend Produktbestand", http.StatusBadRequest)
+		return
+	}
+
+	aktualisierteMenge := produktMenge.Quantity - kaufanfrage.Quantity
+
+	// Rufe den "Produktkauf" im Produkt-Microservice auf
+	updateRequest := struct {
+		Quantity int    `json:"quantity,omitempty" bson:"quantity,omitempty"`
+		Name     string `json:"name,omitempty" bson:"name,omitempty"`
+	}{
+		Quantity: aktualisierteMenge,
+		Name:     kaufanfrage.ProduktName,
+	}
+
+	updateRequestBody, err := json.Marshal(updateRequest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	productMicroserviceURL = k.ProduktMicroserviceURL + "/product/" + kaufanfrage.ProduktID.Hex()
+	req, err := http.NewRequest("PUT", productMicroserviceURL, bytes.NewBuffer(updateRequestBody))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	response, err = client.Do(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -160,7 +220,7 @@ func (k *Kunde) Kaufen(w http.ResponseWriter, r *http.Request) {
 	// Aktualisiere die Liste der gekauften Produkte im Kunden
 	gekauftesProdukt := GekauftesProdukt{
 		ProduktID: kaufanfrage.ProduktID,
-		Menge:     kaufanfrage.Menge,
+		Quantity:  kaufanfrage.Quantity,
 	}
 
 	_, err = k.Collection.UpdateOne(
